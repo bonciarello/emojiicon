@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generatore di Icone da Emoji — Crea PNG con sfondo personalizzabile</title>
+  <meta name="description" content="Trasforma qualsiasi emoji in un'icona PNG scaricabile. Scegli colore di sfondo e dimensioni (da 16×16 a 128×128 pixel). Generazione istantanea lato server, download immediato.">
+
+  <link rel="canonical" href="https://cristianporco.it/app/emojiicon/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Generatore di Icone da Emoji — Crea PNG con sfondo personalizzabile">
+  <meta property="og:description" content="Trasforma emoji in icone PNG. Sfondo, dimensioni e download in un clic.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cristianporco.it/app/emojiicon/">
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Generatore di Icone da Emoji",
+    "url": "https://cristianporco.it/app/emojiicon/",
+    "description": "Trasforma qualsiasi emoji in un'icona PNG scaricabile con sfondo personalizzabile.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Web"
+  }
+  </script>
+
+  <!-- Google Fonts: Fredoka (display) + Nunito (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Reset & Tokens ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Palette — Emoji Pop */
+      --color-surface:    #FFFBF5;
+      --color-surface-alt:#F5F0E8;
+      --color-primary:    #FFD23F;
+      --color-primary-fg: #2D2B32;
+      --color-accent:     #FF5E8A;
+      --color-ui:         #6C5CE7;
+      --color-success:    #00C9A7;
+      --color-success-fg: #FFFBF5;
+      --color-text:       #2D2B32;
+      --color-text-muted: #8B8990;
+      --color-border:     #E8E4DB;
+      --color-focus:      #6C5CE7;
+
+      /* Typography */
+      --font-display: 'Fredoka', system-ui, sans-serif;
+      --font-body:    'Nunito', system-ui, -apple-system, sans-serif;
+      --font-mono:    'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+
+      /* Spacing (4px grid) */
+      --space-1:  4px;
+      --space-2:  8px;
+      --space-3:  12px;
+      --space-4:  16px;
+      --space-5:  24px;
+      --space-6:  32px;
+      --space-7:  48px;
+
+      /* Radii */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-surface:     #1E1C22;
+        --color-surface-alt: #282630;
+        --color-text:        #EDEBF0;
+        --color-text-muted:  #9C99A3;
+        --color-border:      #3D3A44;
+        --color-primary-fg:  #1E1C22;
+      }
+    }
+
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-surface);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Focus ────────────────────────────────────────────────────── */
+    :focus-visible {
+      outline: 2.5px solid var(--color-focus);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    /* ── Header ───────────────────────────────────────────────────── */
+    header {
+      padding: var(--space-4) var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .logo-emoji {
+      font-size: 2rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+    }
+    .logo-text h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1.25rem;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+    }
+    .logo-text .subtitle {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+
+    /* ── Main Layout ──────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: var(--space-4);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+      align-items: start;
+    }
+
+    @media (max-width: 680px) {
+      main { grid-template-columns: 1fr; gap: var(--space-5); }
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────── */
+    .card {
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    /* ── Controls Section ─────────────────────────────────────────── */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    /* Section label */
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-1);
+    }
+
+    /* ── Emoji Input ──────────────────────────────────────────────── */
+    .emoji-input-row {
+      display: flex;
+      gap: var(--space-2);
+      align-items: stretch;
+    }
+    .emoji-input-row input {
+      flex: 1;
+      min-width: 0;
+      font-size: 1.5rem;
+      padding: var(--space-2) var(--space-3);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      color: var(--color-text);
+      text-align: center;
+      font-family: var(--font-body);
+      transition: border-color 0.2s;
+    }
+    .emoji-input-row input:focus {
+      border-color: var(--color-ui);
+    }
+    .emoji-input-row input::placeholder {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── Emoji Grid ───────────────────────────────────────────────── */
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: var(--space-1);
+    }
+    @media (max-width: 680px) {
+      .emoji-grid { grid-template-columns: repeat(8, 1fr); }
+    }
+    @media (max-width: 420px) {
+      .emoji-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+
+    .emoji-btn {
+      aspect-ratio: 1;
+      font-size: 1.4rem;
+      border: 2px solid transparent;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+      min-width: 44px;
+      min-height: 44px;
+      line-height: 1;
+    }
+    .emoji-btn:hover {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      transform: scale(1.15);
+    }
+    .emoji-btn:focus-visible {
+      border-color: var(--color-focus);
+      background: var(--color-surface-alt);
+    }
+    .emoji-btn.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary);
+    }
+
+    /* ── Color Picker ─────────────────────────────────────────────── */
+    .color-row {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .native-color-input {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      padding: 2px;
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .native-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+    .native-color-input::-webkit-color-swatch { border-radius: 2px; border: none; }
+
+    .color-presets {
+      display: flex;
+      gap: var(--space-1);
+      flex-wrap: wrap;
+    }
+    .color-preset {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--color-border);
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+      min-width: 36px;
+      min-height: 36px;
+    }
+    .color-preset:hover { transform: scale(1.15); }
+    .color-preset:focus-visible {
+      border-color: var(--color-focus);
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+    .color-preset.active {
+      border-color: var(--color-text);
+      box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-text);
+    }
+    .color-preset.transparent {
+      background: repeating-conic-gradient(#ddd 0% 25%, transparent 0% 50%) 50% / 8px 8px;
+    }
+
+    .hex-input {
+      width: 90px;
+      padding: var(--space-2);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+    .hex-input:focus { border-color: var(--color-ui); }
+
+    /* ── Size Selector ────────────────────────────────────────────── */
+    .size-options {
+      display: flex;
+      gap: var(--space-1);
+      flex-wrap: wrap;
+    }
+    .size-btn {
+      padding: var(--space-2) var(--space-4);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      background: transparent;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-text);
+      cursor: pointer;
+      transition: all 0.15s;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      white-space: nowrap;
+    }
+    .size-btn:hover {
+      border-color: var(--color-ui);
+      color: var(--color-ui);
+    }
+    .size-btn.active {
+      background: var(--color-ui);
+      border-color: var(--color-ui);
+      color: #fff;
+    }
+
+    .size-btn .px-dim {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      font-weight: 400;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      border: none;
+      border-radius: var(--radius-xl);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      min-height: 48px;
+      min-width: 44px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-generate {
+      background: var(--color-primary);
+      color: var(--color-primary-fg);
+      width: 100%;
+      box-shadow: 0 2px 0 0 rgba(0,0,0,0.08);
+      font-size: 1.1rem;
+      letter-spacing: -0.01em;
+    }
+    .btn-generate:hover:not(:disabled) {
+      box-shadow: 0 4px 12px rgba(255,210,63,0.4);
+    }
+
+    .btn-download {
+      background: var(--color-success);
+      color: var(--color-success-fg);
+      width: 100%;
+      box-shadow: 0 2px 0 0 rgba(0,0,0,0.08);
+    }
+    .btn-download:hover:not(:disabled) {
+      box-shadow: 0 4px 12px rgba(0,201,167,0.4);
+    }
+
+    /* ── Preview Section ──────────────────────────────────────────── */
+    .preview { display: flex; flex-direction: column; gap: var(--space-4); }
+
+    .preview-card {
+      background: var(--color-surface-alt);
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .preview-card.has-icon { border-style: solid; border-color: var(--color-border); }
+    .preview-card:hover .pixel-loupe { opacity: 1; }
+
+    .preview-placeholder {
+      text-align: center;
+      color: var(--color-text-muted);
+      pointer-events: none;
+    }
+    .preview-placeholder .ph-emoji {
+      font-size: 3rem;
+      opacity: 0.3;
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .preview-placeholder .ph-text {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .preview-img-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+    .preview-img-wrap img {
+      display: block;
+      image-rendering: auto;
+      /* Floating shadow — signature element */
+      filter:
+        drop-shadow(0 6px 16px rgba(0,0,0,0.15))
+        drop-shadow(0 2px 4px rgba(0,0,0,0.10));
+      transition: filter 0.4s, transform 0.4s;
+      animation: float-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes float-in {
+      0%   { opacity: 0; transform: scale(0.6) translateY(16px); }
+      100% { opacity: 1; transform: scale(1)   translateY(0); }
+    }
+
+    /* ── Pixel Loupe (signature element) ─────────────────────────── */
+    .pixel-loupe {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--color-ui);
+      box-shadow: 0 0 0 4px rgba(108,92,231,0.15), 0 4px 20px rgba(0,0,0,0.2);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+      overflow: hidden;
+      background: var(--color-surface);
+    }
+    .pixel-loupe::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%);
+      pointer-events: none;
+    }
+    .loupe-inner {
+      position: absolute;
+      width: 300%;
+      height: 300%;
+      image-rendering: pixelated;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+    }
+    /* Crosshair in the loupe */
+    .pixel-loupe::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2px;
+      height: 12px;
+      background: rgba(108,92,231,0.5);
+      z-index: 2;
+      pointer-events: none;
+      box-shadow: 6px 0 0 -5px rgba(108,92,231,0.5);
+    }
+
+    /* Preview info bar */
+    .preview-info {
+      display: flex;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--color-text-muted);
+      justify-content: center;
+    }
+    .preview-info span {
+      background: var(--color-surface-alt);
+      padding: 2px var(--space-2);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+    }
+
+    /* ── Error / Status ───────────────────────────────────────────── */
+    .status-msg {
+      font-size: 0.8rem;
+      font-weight: 500;
+      min-height: 1.2em;
+      color: var(--color-accent);
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────── */
+    footer {
+      padding: var(--space-3) var(--space-4);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* ── Motion ───────────────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="logo-emoji" aria-hidden="true">🎨</span>
+    <div class="logo-text">
+      <h1>Generatore di Icone da Emoji</h1>
+      <p class="subtitle">Trasforma emoji in icone PNG con sfondo personalizzabile</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Left column: Controls -->
+  <section class="controls" aria-label="Controlli">
+    <!-- Emoji Selection -->
+    <div>
+      <p class="section-label" id="emoji-label">1. Scegli l'emoji</p>
+      <div class="emoji-input-row">
+        <input
+          type="text"
+          id="emoji-input"
+          placeholder="Incolla un'emoji qui…"
+          maxlength="8"
+          aria-labelledby="emoji-label"
+          autocomplete="off"
+        >
+      </div>
+      <div class="emoji-grid" id="emoji-grid" role="radiogroup" aria-label="Emoji predefinite" style="margin-top:var(--space-2)"></div>
+    </div>
+
+    <!-- Color Selection -->
+    <div>
+      <p class="section-label" id="color-label">2. Colore di sfondo</p>
+      <div class="color-row">
+        <input type="color" id="color-picker" class="native-color-input" value="#FFD23F" aria-label="Selettore colore personalizzato">
+        <div class="color-presets" id="color-presets" role="radiogroup" aria-label="Colori predefiniti"></div>
+      </div>
+      <div class="color-row" style="margin-top:var(--space-2)">
+        <label for="hex-input" style="font-size:0.8rem;color:var(--color-text-muted)">Hex:</label>
+        <input type="text" id="hex-input" class="hex-input" value="#FFD23F" maxlength="7" aria-label="Codice esadecimale colore">
+        <span style="font-size:0.75rem;color:var(--color-text-muted)">#RRGGBB</span>
+      </div>
+    </div>
+
+    <!-- Size Selection -->
+    <div>
+      <p class="section-label" id="size-label">3. Dimensioni icona</p>
+      <div class="size-options" id="size-options" role="radiogroup" aria-label="Dimensioni pixel"></div>
+    </div>
+
+    <!-- Status -->
+    <p class="status-msg" id="status-msg" role="status" aria-live="polite"></p>
+
+    <!-- Generate Button -->
+    <button type="button" id="btn-generate" class="btn btn-generate">
+      ✨ Genera icona
+    </button>
+  </section>
+
+  <!-- Right column: Preview -->
+  <section class="preview" aria-label="Anteprima">
+    <p class="section-label">Anteprima</p>
+    <div class="preview-card" id="preview-card">
+      <div class="preview-placeholder" id="preview-placeholder">
+        <span class="ph-emoji" aria-hidden="true">🖼️</span>
+        <span class="ph-text">Seleziona un'emoji e clicca Genera</span>
+      </div>
+      <div class="preview-img-wrap" id="preview-img-wrap" style="display:none">
+        <img id="preview-img" src="" alt="Anteprima icona generata" width="128" height="128">
+        <div class="pixel-loupe" id="pixel-loupe" aria-hidden="true">
+          <div class="loupe-inner" id="loupe-inner"></div>
+        </div>
+      </div>
+    </div>
+    <div class="preview-info" id="preview-info"></div>
+    <button type="button" id="btn-download" class="btn btn-download" disabled>
+      ⬇ Scarica PNG
+    </button>
+  </section>
+</main>
+
+<footer>
+  <p>Generatore di Icone da Emoji — PNG ottimizzati, generazione lato server</p>
+</footer>
+
+<script>
+  // ── State ────────────────────────────────────────────────────────
+  const state = {
+    emoji: '',
+    bgColor: '#FFD23F',
+    size: 64,
+    imageBlob: null,
+    imageUrl: null,
+  };
+
+  // ── DOM refs ─────────────────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const emojiInput   = $('emoji-input');
+  const emojiGrid    = $('emoji-grid');
+  const colorPicker  = $('color-picker');
+  const hexInput     = $('hex-input');
+  const colorPresets = $('color-presets');
+  const sizeOptions  = $('size-options');
+  const btnGenerate  = $('btn-generate');
+  const btnDownload  = $('btn-download');
+  const statusMsg    = $('status-msg');
+  const previewCard  = $('preview-card');
+  const placeholder  = $('preview-placeholder');
+  const imgWrap      = $('preview-img-wrap');
+  const previewImg   = $('preview-img');
+  const previewInfo  = $('preview-info');
+  const pixelLoupe   = $('pixel-loupe');
+  const loupeInner   = $('loupe-inner');
+
+  // ── Emoji Catalog ────────────────────────────────────────────────
+  let emojiCatalog = [];
+
+  async function loadEmojiCatalog() {
+    try {
+      const res = await fetch('api/emojis');
+      emojiCatalog = await res.json();
+      buildEmojiGrid();
+    } catch (e) {
+      // Fallback catalog
+      emojiCatalog = ["😀","😂","🤣","😍","🥰","😎","🤩","👍","👏","🙌","❤️","⭐","🔥","💯","✨","💻","🎨","🚀","🌈","🌸"];
+      buildEmojiGrid();
+    }
+  }
+
+  function buildEmojiGrid() {
+    emojiGrid.innerHTML = '';
+    emojiCatalog.forEach(emoji => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'emoji-btn';
+      btn.textContent = emoji;
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false');
+      btn.setAttribute('aria-label', `Emoji ${emoji}`);
+      btn.addEventListener('click', () => selectEmoji(emoji, btn));
+      emojiGrid.appendChild(btn);
+    });
+  }
+
+  function selectEmoji(emoji, btnEl) {
+    state.emoji = emoji;
+    emojiInput.value = emoji;
+    // Update grid active state
+    emojiGrid.querySelectorAll('.emoji-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-checked', 'false');
+    });
+    if (btnEl) {
+      btnEl.classList.add('active');
+      btnEl.setAttribute('aria-checked', 'true');
+    }
+    setStatus('', false);
+  }
+
+  // ── Emoji Input ──────────────────────────────────────────────────
+  emojiInput.addEventListener('input', () => {
+    const val = emojiInput.value.trim();
+    if (val && [...val].some(c => c.charCodeAt(0) > 255 || /\p{Emoji}/u.test(c))) {
+      state.emoji = [...val][0]; // Take first visible character
+      emojiInput.value = state.emoji;
+      emojiGrid.querySelectorAll('.emoji-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      // Highlight matching grid button
+      const match = [...emojiGrid.children].find(b => b.textContent === state.emoji);
+      if (match) {
+        match.classList.add('active');
+        match.setAttribute('aria-checked', 'true');
+      }
+      setStatus('', false);
+    } else if (!val) {
+      state.emoji = '';
+    }
+  });
+
+  emojiInput.addEventListener('paste', (e) => {
+    // Let the paste happen, then process on next tick
+    setTimeout(() => {
+      emojiInput.dispatchEvent(new Event('input'));
+    }, 0);
+  });
+
+  // ── Color ────────────────────────────────────────────────────────
+  const presetColors = [
+    { label: 'Trasparente', value: 'transparent', isTransparent: true },
+    { label: 'Giallo emoji', value: '#FFD23F' },
+    { label: 'Rosa pop',    value: '#FF5E8A' },
+    { label: 'Viola UI',    value: '#6C5CE7' },
+    { label: 'Menta',       value: '#00C9A7' },
+    { label: 'Nero',        value: '#2D2B32' },
+    { label: 'Bianco',      value: '#FFFFFF' },
+    { label: 'Blu',         value: '#4A90D9' },
+  ];
+
+  function buildColorPresets() {
+    colorPresets.innerHTML = '';
+    presetColors.forEach(pc => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'color-preset' + (pc.isTransparent ? ' transparent' : '');
+      if (!pc.isTransparent) {
+        btn.style.backgroundColor = pc.value;
+      }
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false');
+      btn.setAttribute('aria-label', pc.label);
+      btn.title = pc.label;
+      btn.addEventListener('click', () => setColor(pc.value, btn));
+      if (pc.value === state.bgColor) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+      }
+      colorPresets.appendChild(btn);
+    });
+  }
+
+  function setColor(color, btnEl) {
+    state.bgColor = color;
+    colorPicker.value = color === 'transparent' ? '#FFD23F' : color;
+    hexInput.value = color === 'transparent' ? 'transparent' : color;
+    colorPresets.querySelectorAll('.color-preset').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-checked', 'false');
+    });
+    if (btnEl) {
+      btnEl.classList.add('active');
+      btnEl.setAttribute('aria-checked', 'true');
+    }
+  }
+
+  colorPicker.addEventListener('input', () => {
+    const val = colorPicker.value;
+    state.bgColor = val;
+    hexInput.value = val;
+    colorPresets.querySelectorAll('.color-preset').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-checked', 'false');
+    });
+  });
+
+  hexInput.addEventListener('input', () => {
+    let val = hexInput.value.trim();
+    if (val.toLowerCase() === 'transparent' || val === '') {
+      state.bgColor = 'transparent';
+      hexInput.value = 'transparent';
+      colorPresets.querySelectorAll('.color-preset').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      const tr = [...colorPresets.children].find(b => b.classList.contains('transparent'));
+      if (tr) { tr.classList.add('active'); tr.setAttribute('aria-checked', 'true'); }
+      return;
+    }
+    if (!val.startsWith('#')) val = '#' + val;
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      state.bgColor = val.toUpperCase();
+      colorPicker.value = val;
+      colorPresets.querySelectorAll('.color-preset').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+      });
+    }
+    hexInput.value = val;
+  });
+
+  hexInput.addEventListener('blur', () => {
+    const val = hexInput.value.trim();
+    if (val.toLowerCase() === 'transparent' || val === '') {
+      state.bgColor = 'transparent';
+      hexInput.value = 'transparent';
+    } else if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      state.bgColor = val.toUpperCase();
+      hexInput.value = state.bgColor;
+    } else {
+      // Reset to current state
+      hexInput.value = state.bgColor === 'transparent' ? 'transparent' : state.bgColor;
+    }
+  });
+
+  // ── Size ─────────────────────────────────────────────────────────
+  const sizes = [16, 32, 64, 128];
+
+  function buildSizeOptions() {
+    sizeOptions.innerHTML = '';
+    sizes.forEach(size => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'size-btn';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', size === state.size ? 'true' : 'false');
+      btn.innerHTML = `${size}<span class="px-dim">px</span>`;
+      if (size === state.size) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        state.size = size;
+        sizeOptions.querySelectorAll('.size-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-checked', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+        setStatus('', false);
+      });
+      sizeOptions.appendChild(btn);
+    });
+  }
+
+  // ── Status ───────────────────────────────────────────────────────
+  function setStatus(msg, isError = false) {
+    statusMsg.textContent = msg;
+    statusMsg.style.color = isError ? 'var(--color-accent)' : 'var(--color-text-muted)';
+  }
+
+  // ── Generate ─────────────────────────────────────────────────────
+  async function generateIcon() {
+    if (!state.emoji) {
+      setStatus('Seleziona un\'emoji prima di generare', true);
+      return;
+    }
+
+    setStatus('Generazione in corso…', false);
+    btnGenerate.disabled = true;
+    btnDownload.disabled = true;
+
+    try {
+      const res = await fetch('api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emoji: state.emoji,
+          bgColor: state.bgColor,
+          size: state.size,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Errore sconosciuto' }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const blob = await res.blob();
+      state.imageBlob = blob;
+
+      // Revoke old URL
+      if (state.imageUrl) URL.revokeObjectURL(state.imageUrl);
+      state.imageUrl = URL.createObjectURL(blob);
+
+      // Show preview
+      previewImg.src = state.imageUrl;
+      previewImg.width = state.size;
+      previewImg.height = state.size;
+
+      placeholder.style.display = 'none';
+      imgWrap.style.display = 'flex';
+      previewCard.classList.add('has-icon');
+      btnDownload.disabled = false;
+
+      // Update info
+      const bgLabel = state.bgColor === 'transparent' ? 'trasparente' : state.bgColor;
+      previewInfo.innerHTML = `<span>${state.size}×${state.size} px</span><span>${bgLabel}</span>`;
+
+      // Re-trigger float animation
+      previewImg.style.animation = 'none';
+      previewImg.offsetHeight; // force reflow
+      previewImg.style.animation = 'float-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both';
+
+      setStatus('Icona generata! 🎉', false);
+    } catch (err) {
+      setStatus(`Errore: ${err.message}`, true);
+      previewImg.src = '';
+      placeholder.style.display = '';
+      imgWrap.style.display = 'none';
+      previewCard.classList.remove('has-icon');
+      previewInfo.innerHTML = '';
+    } finally {
+      btnGenerate.disabled = false;
+    }
+  }
+
+  btnGenerate.addEventListener('click', generateIcon);
+
+  // ── Download ────────────────────────────────────────────────────
+  async function downloadIcon() {
+    if (!state.emoji) return;
+
+    btnDownload.disabled = true;
+    setStatus('Preparazione download…', false);
+
+    try {
+      const res = await fetch('api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emoji: state.emoji,
+          bgColor: state.bgColor,
+          size: state.size,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Errore' }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const blob = await res.blob();
+      const cp = [...state.emoji].map(c => c.codePointAt(0).toString(16)).join('-');
+      const filename = `icon-${cp}-${state.size}px.png`;
+
+      // Trigger download via temporary link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      setStatus('Scaricato! ✅', false);
+    } catch (err) {
+      setStatus(`Errore download: ${err.message}`, true);
+    } finally {
+      btnDownload.disabled = false;
+    }
+  }
+
+  btnDownload.addEventListener('click', downloadIcon);
+
+  // ── Pixel Loupe ─────────────────────────────────────────────────
+  if (window.matchMedia('(pointer: fine)').matches) {
+    previewCard.addEventListener('mousemove', (e) => {
+      if (!state.imageUrl) return;
+      const rect = previewCard.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      pixelLoupe.style.left = (x - 50) + 'px';
+      pixelLoupe.style.top  = (y - 50) + 'px';
+
+      // Position the zoomed image inside the loupe
+      const imgRect = previewImg.getBoundingClientRect();
+      const imgX = e.clientX - imgRect.left;
+      const imgY = e.clientY - imgRect.top;
+
+      loupeInner.style.backgroundImage = `url(${state.imageUrl})`;
+      loupeInner.style.backgroundSize = `${previewImg.width * 3}px ${previewImg.height * 3}px`;
+      loupeInner.style.backgroundPosition = `-${imgX * 3 - 50}px -${imgY * 3 - 50}px`;
+    });
+
+    previewCard.addEventListener('mouseenter', () => {
+      if (state.imageUrl) {
+        loupeInner.style.backgroundImage = `url(${state.imageUrl})`;
+        loupeInner.style.backgroundSize = `${previewImg.width * 3}px ${previewImg.height * 3}px`;
+      }
+    });
+  }
+
+  // ── Keyboard shortcut: Enter in emoji input triggers generate ────
+  emojiInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      generateIcon();
+    }
+  });
+
+  // ── Init ─────────────────────────────────────────────────────────
+  function init() {
+    buildColorPresets();
+    buildSizeOptions();
+    loadEmojiCatalog();
+  }
+  init();
+</script>
+
+</body>
+</html>

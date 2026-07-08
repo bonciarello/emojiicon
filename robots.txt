@@ -1,0 +1,4 @@
+Sitemap: https://cristianporco.it/app/emojiicon/sitemap.xml
+
+User-agent: *
+Allow: /
