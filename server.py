@@ -267,7 +267,7 @@ def robots():
     """Serve robots.txt."""
     return send_file(
         io.BytesIO(
-            b"Sitemap: https://cristianporco.it/app/emojiicon/sitemap.xml\n\n"
+            b"Sitemap: https://github.com/bonciarello/emojiicon/sitemap.xml\n\n"
             b"User-agent: *\nAllow: /\n"
         ),
         mimetype="text/plain",
@@ -281,7 +281,7 @@ def sitemap():
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         "  <url>\n"
-        "    <loc>https://cristianporco.it/app/emojiicon/</loc>\n"
+        "    <loc>https://github.com/bonciarello/emojiicon/</loc>\n"
         "    <changefreq>monthly</changefreq>\n"
         "    <priority>1.0</priority>\n"
         "  </url>\n"

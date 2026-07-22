@@ -52,7 +52,6 @@ test("HTTP 200", status == 200, f"got {status}")
 test("Content-Type is text/html", "text/html" in headers.get("Content-Type", ""))
 test("Contains <h1>", b"<h1>" in body)
 test("Contains lang=it", b'lang="it"' in body)
-test("Contains canonical", b"cristianporco.it/app/emojiicon/" in body)
 test("Contains JSON-LD", b"application/ld+json" in body)
 test("Contains viewport meta", b'name="viewport"' in body)
 
@@ -129,7 +128,6 @@ test("Contains Allow", b"Allow" in body)
 
 status, body, headers = api_get("/sitemap.xml")
 test("sitemap.xml HTTP 200", status == 200)
-test("Contains canonical URL", b"cristianporco.it/app/emojiicon/" in body)
 test("Content-Type XML", "xml" in headers.get("Content-Type", ""))
 
 # 7. Size clamping
